@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音乐播放器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF6B8B',
+                        secondary: '#FFD166',
+                        dark: '#1A1A2E',
+                        light: '#F8F9FA',
+                        accent: '#06D6A0'
+                    },
+                    fontFamily: {
+                        poppins: ['Poppins', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            }
+            .animate-spin-slow {
+                animation: spin 20s linear infinite;
+            }
+            .animate-float {
+                animation: float 3s ease-in-out infinite;
+            }
+            .animate-pulse-slow {
+                animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            }
+            .animate-float-up {
+                animation: float-up 15s linear infinite;
+            }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes float-up {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-20vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="min-h-screen bg-gradient-to-br from-dark to-dark/80 flex flex-col items-center justify-center p-4 overflow-x-hidden font-poppins text-light relative">
+    <!-- 粒子背景效果容器 -->
+    <div id="particles-container" class="absolute inset-0 pointer-events-none overflow-hidden"></div>
+
+    <!-- 主内容区 -->
+    <main class="w-full max-w-md bg-dark/60 backdrop-blur-md rounded-2xl shadow-2xl p-6 relative z-10">
+        <!-- 旋转唱片区域 -->
+        <div class="relative w-[clamp(180px,60vw,280px)] h-[clamp(180px,60vw,280px)] mx-auto mb-8">
+            <!-- 黑胶唱片 -->
+            <div id="vinyl" class="absolute inset-0 rounded-full bg-[#121212] shadow-[0_0_30px_rgba(0,0,0,0.5)] overflow-hidden">
+                <!-- 唱片纹理 -->
+                <div class="absolute inset-[10%] rounded-full border-4 border-[#1a1a1a] border-dashed"></div>
+                <div class="absolute inset-[20%] rounded-full border border-[#1a1a1a]"></div>
+                <div class="absolute inset-[30%] rounded-full border border-[#1a1a1a]"></div>
+                <div class="absolute inset-[40%] rounded-full border border-[#1a1a1a]"></div>
+                
+                <!-- 唱片标签 -->
+                <div class="absolute inset-[45%] rounded-full bg-primary flex items-center justify-center">
+                    <div class="w-3 h-3 rounded-full bg-dark"></div>
+                </div>
+            </div>
+            
+            <!-- 专辑封面 -->
+            <div id="album-cover" class="absolute inset-[15%] rounded-full overflow-hidden shadow-lg">
+                <img src="https://picsum.photos/seed/album1/300/300" alt="专辑封面" class="w-full h-full object-cover">
+            </div>
+            
+            <!-- 唱片中心 -->
+            <div class="absolute inset-[48%] rounded-full bg-dark/80 z-10 flex items-center justify-center">
+                <div class="w-2 h-2 rounded-full bg-light/70"></div>
+            </div>
+        </div>
+        
+        <!-- 歌曲信息 -->
+        <div class="text-center mb-6">
+            <h2 id="song-title" class="text-[clamp(1.2rem,3vw,1.5rem)] font-semibold text-light mb-1 truncate">音乐标题</h2>
+            <p id="artist" class="text-light/70 text-sm">艺术家</p>
+        </div>
+        
+        <!-- 进度条 -->
+        <div class="mb-6">
+            <div class="flex justify-between text-xs text-light/50 mb-1">
+                <span id="current-time">00:00</span>
+                <span id="total-time">00:00</span>
+            </div>
+            <div class="h-1 bg-light/20 rounded-full overflow-hidden cursor-pointer group relative" id="progress-container">
+                <div id="progress-bar" class="h-full bg-primary w-0 transition-all duration-300"></div>
+                <div id="progress-handle" class="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-primary rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            </div>
+        </div>
+        
+        <!-- 控制按钮 -->
+        <div class="flex items-center justify-between mb-6">
+            <button class="w-8 h-8 flex items-center justify-center text-light/60 hover:text-primary transition-colors">
+                <i class="fa fa-random"></i>
+            </button>
+            
+            <button class="w-10 h-10 flex items-center justify-center text-light/80 hover:text-primary transition-colors">
+                <i class="fa fa-step-backward"></i>
+            </button>
+            
+            <button id="play-pause-btn" class="w-16 h-16 rounded-full bg-primary flex items-center justify-center shadow-lg hover:shadow-primary/50 transition-all duration-300 hover:scale-105">
+                <i class="fa fa-play text-xl text-light"></i>
+            </button>
+            
+            <button class="w-10 h-10 flex items-center justify-center text-light/80 hover:text-primary transition-colors">
+                <i class="fa fa-step-forward"></i>
+            </button>
+            
+            <button class="w-8 h-8 flex items-center justify-center text-light/60 hover:text-primary transition-colors">
+                <i class="fa fa-repeat"></i>
+            </button>
+        </div>
+        
+        <!-- 音量控制 -->
+        <div class="flex items-center">
+            <button id="volume-btn" class="w-6 h-6 flex items-center justify-center text-light/70 mr-2">
+                <i class="fa fa-volume-up"></i>
+            </button>
+            
+            <div class="flex-1 h-1 bg-light/20 rounded-full overflow-hidden cursor-pointer group relative">
+                <div id="volume-bar" class="h-full bg-light/50 w-[70%] transition-all duration-300"></div>
+                <div id="volume-handle" class="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-light rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="mt-8 text-center w-full p-4 text-light/50 text-sm z-10">
+        <p>哈基秀生日快乐 &copy; 11·13</p>
+    </footer>
+
+    <!-- 音频元素 -->
+    <audio id="audio-player" loop>
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // 音频控制
+        const audio = document.getElementById('audio-player');
+        const playPauseBtn = document.getElementById('play-pause-btn');
+        const progressBar = document.getElementById('progress-bar');
+        const progressHandle = document.getElementById('progress-handle');
+        const progressContainer = document.getElementById('progress-container');
+        const currentTimeSpan = document.getElementById('current-time');
+        const totalTimeSpan = document.getElementById('total-time');
+        const volumeBtn = document.getElementById('volume-btn');
+        const volumeBar = document.getElementById('volume-bar');
+        const volumeHandle = document.getElementById('volume-handle');
+        const volumeContainer = volumeBar.parentElement;
+        const vinyl = document.getElementById('vinyl');
+        const albumCover = document.getElementById('album-cover');
+        const songTitle = document.getElementById('song-title');
+        const artist = document.getElementById('artist');
+        
+        // 模拟播放列表
+        const playlist = [
+            {
+                title: "Happy Birthday Melody",
+                artist: "Joyful Sounds",
+                cover: "https://picsum.photos/seed/album1/300/300",
+                src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+            },
+            {
+                title: "Celebration Song",
+                artist: "Party Vibes",
+                cover: "https://picsum.photos/seed/album2/300/300",
+                src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"
+            },
+            {
+                title: "Joyful Music",
+                artist: "Happy Tunes",
+                cover: "https://picsum.photos/seed/album3/300/300",
+                src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3"
+            }
+        ];
+        
+        let currentTrackIndex = 0;
+        
+        // 初始化播放器
+        function initPlayer() {
+            loadTrack(currentTrackIndex);
+            
+            // 尝试自动播放
+            document.addEventListener('click', () => {
+                if (audio.paused) {
+                    audio.play().catch(e => {
+                        console.log("无法自动播放音乐，请点击播放按钮:", e);
+                    });
+                }
+            }, { once: true });
+        }
+        
+        // 加载音乐
+        function loadTrack(index) {
+            const track = playlist[index];
+            audio.src = track.src;
+            songTitle.textContent = track.title;
+            artist.textContent = track.artist;
+            albumCover.querySelector('img').src = track.cover;
+            
+            audio.load();
+            
+            // 更新播放状态
+            if (!audio.paused) {
+                audio.play();
+            }
+        }
+        
+        // 播放/暂停切换
+        playPauseBtn.addEventListener('click', () => {
+            if (audio.paused) {
+                audio.play();
+                playPauseBtn.innerHTML = '<i class="fa fa-pause text-xl text-light"></i>';
+                vinyl.classList.add('animate-spin-slow');
+                albumCover.classList.add('animate-spin-slow');
+            } else {
+                audio.pause();
+                playPauseBtn.innerHTML = '<i class="fa fa-play text-xl text-light"></i>';
+                vinyl.classList.remove('animate-spin-slow');
+                albumCover.classList.remove('animate-spin-slow');
+            }
+        });
+        
+        // 进度条更新
+        audio.addEventListener('timeupdate', () => {
+            const progress = (audio.currentTime / audio.duration) * 100;
+            progressBar.style.width = `${progress}%`;
+            progressHandle.style.left = `${progress}%`;
+            
+            // 更新时间显示
+            currentTimeSpan.textContent = formatTime(audio.currentTime);
+            if (audio.duration) {
+                totalTimeSpan.textContent = formatTime(audio.duration);
+            }
+        });
+        
+        // 时间格式化
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const secondsRemainder = Math.round(seconds % 60);
+            return `${minutes.toString().padStart(2, '0')}:${secondsRemainder.toString().padStart(2, '0')}`;
+        }
+        
+        // 点击进度条跳转
+        progressContainer.addEventListener('click', (e) => {
+            const rect = progressContainer.getBoundingClientRect();
+            const pos = (e.clientX - rect.left) / rect.width;
+            audio.currentTime = pos * audio.duration;
+        });
+        
+        // 拖动进度条
+        let isDraggingProgress = false;
+        
+        progressHandle.addEventListener('mousedown', (e) => {
+            isDraggingProgress = true;
+            e.preventDefault();
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+            if (isDraggingProgress) {
+                const rect = progressContainer.getBoundingClientRect();
+                let pos = (e.clientX - rect.left) / rect.width;
+                pos = Math.max(0, Math.min(1, pos));
+                progressBar.style.width = `${pos * 100}%`;
+                progressHandle.style.left = `${pos * 100}%`;
+            }
+        });
+        
+        document.addEventListener('mouseup', () => {
+            if (isDraggingProgress) {
+                isDraggingProgress = false;
+                const pos = parseFloat(progressBar.style.width) / 100;
+                audio.currentTime = pos * audio.duration;
+            }
+        });
+        
+        // 音量控制
+        let isMuted = false;
+        
+        volumeBtn.addEventListener('click', () => {
+            audio.muted = !audio.muted;
+            isMuted = audio.muted;
+            volumeBtn.innerHTML = isMuted ? '<i class="fa fa-volume-off"></i>' : '<i class="fa fa-volume-up"></i>';
+            updateVolumeUI();
+        });
+        
+        // 点击音量条调整音量
+        volumeContainer.addEventListener('click', (e) => {
+            const rect = volumeContainer.getBoundingClientRect();
+            const pos = (e.clientX - rect.left) / rect.width;
+            audio.volume = pos;
+            updateVolumeUI();
+        });
+        
+        // 拖动音量条
+        let isDraggingVolume = false;
+        
+        volumeHandle.addEventListener('mousedown', (e) => {
+            isDraggingVolume = true;
+            e.preventDefault();
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+            if (isDraggingVolume) {
+                const rect = volumeContainer.getBoundingClientRect();
+                let pos = (e.clientX - rect.left) / rect.width;
+                pos = Math.max(0, Math.min(1, pos));
+                volumeBar.style.width = `${pos * 100}%`;
+                volumeHandle.style.left = `${pos * 100}%`;
+            }
+        });
+        
+        document.addEventListener('mouseup', () => {
+            if (isDraggingVolume) {
+                isDraggingVolume = false;
+                audio.volume = parseFloat(volumeBar.style.width) / 100;
+            }
+        });
+        
+        // 更新音量UI
+        function updateVolumeUI() {
+            if (isMuted) {
+                volumeBar.style.width = '0%';
+                volumeHandle.style.left = '0%';
+            } else {
+                volumeBar.style.width = `${audio.volume * 100}%`;
+                volumeHandle.style.left = `${audio.volume * 100}%`;
+                
+                // 更新音量图标
+                if (audio.volume > 0.7) {
+                    volumeBtn.innerHTML = '<i class="fa fa-volume-up"></i>';
+                } else if (audio.volume > 0) {
+                    volumeBtn.innerHTML = '<i class="fa fa-volume-down"></i>';
+                } else {
+                    volumeBtn.innerHTML = '<i class="fa fa-volume-off"></i>';
+                }
+            }
+        }
+        
+        // 音频加载完成
+        audio.addEventListener('loadedmetadata', () => {
+            totalTimeSpan.textContent = formatTime(audio.duration);
+        });
+        
+        // 音频播放结束
+        audio.addEventListener('ended', () => {
+            // 播放下一首
+            currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
+            loadTrack(currentTrackIndex);
+        });
+        
+        // 创建粒子背景效果
+        function createParticles() {
+            const colors = ['#FF6B8B', '#FFD166', '#06D6A0', '#118AB2', '#FFFFFF'];
+            const container = document.getElementById('particles-container');
+            
+            // 创建150个粒子元素
+            for (let i = 0; i < 150; i++) {
+                const particle = document.createElement('div');
+                
+                // 随机属性
+                const size = Math.random() * 5 + 2; // 2-7px
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                const left = Math.random() * 100; // 0-100%
+                const animationDuration = Math.random() * 20 + 10; // 10-30s
+                const animationDelay = Math.random() * 30; // 0-30s
+                const opacity = Math.random() * 0.5 + 0.2; // 0.2-0.7
+                
+                // 设置样式
+                particle.style.position = 'absolute';
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.backgroundColor = color;
+                particle.style.left = `${left}%`;
+                particle.style.top = '-20px';
+                particle.style.opacity = opacity;
+                particle.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                particle.style.transform = 'rotate(0deg)';
+                particle.style.animation = `float-up ${animationDuration}s linear ${animationDelay}s infinite`;
+                
+                container.appendChild(particle);
+            }
+        }
+        
+        // 页面加载完成后初始化
+        window.addEventListener('load', () => {
+            initPlayer();
+            createParticles();
+        });
+    </script>
+</body>
+</html>
