@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>音乐播放器</title>
+    <!-- 新增：优化移动端视口，特别是针对 iPhone 刘海屏 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>生日快乐哦~这是我给你唱的歌</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <script>
@@ -11,11 +14,11 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '#FF6B8B',
-                        secondary: '#FFD166',
-                        dark: '#1A1A2E',
-                        light: '#F8F9FA',
-                        accent: '#06D6A0'
+                        primary: '#FFB6C1', // 淡粉色（可根据喜好调整色值）
+                secondary: '#FFE4E1', // 浅粉辅助色（可选，保持协调）
+                dark: '#1A1A2E', // 背景色可保留深色，突出淡粉色
+                light: '#F8F9FA',
+                accent: '#FFCED8' 
                     },
                     fontFamily: {
                         poppins: ['Poppins', 'sans-serif']
@@ -32,6 +35,10 @@
             .animate-spin-slow {
                 animation: spin 20s linear infinite;
             }
+            .animate-spin-start {
+                animation: spin 20s linear infinite;
+                animation-play-state: paused;
+            }
             .animate-float {
                 animation: float 3s ease-in-out infinite;
             }
@@ -40,6 +47,12 @@
             }
             .animate-float-up {
                 animation: float-up 15s linear infinite;
+            }
+            .btn-hover {
+                transition: all 0.3s ease;
+            }
+            .btn-hover:hover {
+                transform: scale(1.15);
             }
         }
 
@@ -50,7 +63,7 @@
 
         @keyframes float-up {
             0% {
-                transform: translateY(100vh) rotate(0deg);
+                transform: translateY(100vh);
                 opacity: 0;
             }
             10% {
@@ -60,10 +73,17 @@
                 opacity: 1;
             }
             100% {
-                transform: translateY(-20vh) rotate(720deg);
+                transform: translateY(-20vh);
                 opacity: 0;
             }
         }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+       
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -72,11 +92,11 @@
     <div id="particles-container" class="absolute inset-0 pointer-events-none overflow-hidden"></div>
 
     <!-- 主内容区 -->
-    <main class="w-full max-w-md bg-dark/60 backdrop-blur-md rounded-2xl shadow-2xl p-6 relative z-10">
+    <main class="w-full max-w-md bg-dark/60 backdrop-blur-md rounded-2xl shadow-[0_0_30px_rgba(255,107,139,0.15)] p-8 relative z-10 transform transition-all duration-500 hover:shadow-primary/20">
         <!-- 旋转唱片区域 -->
-        <div class="relative w-[clamp(180px,60vw,280px)] h-[clamp(180px,60vw,280px)] mx-auto mb-8">
+        <div class="relative w-[clamp(200px,70vw,300px)] h-[clamp(200px,70vw,300px)] mx-auto mb-8">
             <!-- 黑胶唱片 -->
-            <div id="vinyl" class="absolute inset-0 rounded-full bg-[#121212] shadow-[0_0_30px_rgba(0,0,0,0.5)] overflow-hidden">
+            <div id="vinyl" class="absolute inset-0 rounded-full bg-[#121212] shadow-[0_0_30px_rgba(0,0,0,0.5)] overflow-hidden animate-spin-start">
                 <!-- 唱片纹理 -->
                 <div class="absolute inset-[10%] rounded-full border-4 border-[#1a1a1a] border-dashed"></div>
                 <div class="absolute inset-[20%] rounded-full border border-[#1a1a1a]"></div>
@@ -85,74 +105,74 @@
                 
                 <!-- 唱片标签 -->
                 <div class="absolute inset-[45%] rounded-full bg-primary flex items-center justify-center">
-                    <div class="w-3 h-3 rounded-full bg-dark"></div>
+                    <div class="w-4 h-4 rounded-full bg-dark"></div>
                 </div>
             </div>
             
             <!-- 专辑封面 -->
-            <div id="album-cover" class="absolute inset-[15%] rounded-full overflow-hidden shadow-lg">
-                <img src="https://picsum.photos/seed/album1/300/300" alt="专辑封面" class="w-full h-full object-cover">
+            <div id="album-cover" class="absolute inset-[15%] rounded-full overflow-hidden shadow-lg animate-spin-start">
+                <img src="https://raw.githubusercontent.com/Lydand593/Lydand593.github.io/main/3796fadba1922e742123c6e492c64c25.jpg" alt="专辑封面" class="w-full h-full object-cover">
             </div>
             
         </div>
         
         <!-- 歌曲信息 -->
-        <div class="text-center mb-6">
-            <h2 id="song-title" class="text-[clamp(1.2rem,3vw,1.5rem)] font-semibold text-light mb-1 truncate">音乐标题</h2>
-            <p id="artist" class="text-light/70 text-sm">艺术家</p>
+        <div class="text-center mb-8">
+            <h2 id="song-title" class="text-[clamp(1.5rem,5vw,2rem)] font-semibold text-light mb-2 truncate transition-all duration-300 hover:text-primary">音乐标题</h2>
+            <p id="artist" class="text-light/70 text-lg">艺术家</p>
         </div>
         
         <!-- 进度条 -->
-        <div class="mb-6">
-            <div class="flex justify-between text-xs text-light/50 mb-1">
+        <div class="mb-8">
+            <div class="flex justify-between text-sm text-light/50 mb-2">
                 <span id="current-time">00:00</span>
                 <span id="total-time">00:00</span>
             </div>
-            <div class="h-1 bg-light/20 rounded-full overflow-hidden cursor-pointer group relative" id="progress-container">
+            <div class="h-2 bg-light/20 rounded-full overflow-hidden cursor-pointer group relative" id="progress-container">
                 <div id="progress-bar" class="h-full bg-primary w-0 transition-all duration-300"></div>
-                <div id="progress-handle" class="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-primary rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div id="progress-handle" class="absolute top-1/2 -translate-y-1/2 w-5 h-5 bg-primary rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-125"></div>
             </div>
         </div>
         
-        <!-- 控制按钮 -->
-        <div class="flex items-center justify-between mb-6">
-            <button class="w-8 h-8 flex items-center justify-center text-light/60 hover:text-primary transition-colors">
+        <!-- 控制按钮 - 恢复了所有控制按钮 -->
+        <div class="flex items-center justify-between mb-8">
+            <button id="shuffle-btn" class="w-10 h-10 flex items-center justify-center text-light/60 hover:text-primary transition-colors btn-hover">
                 <i class="fa fa-random"></i>
             </button>
             
-            <button class="w-10 h-10 flex items-center justify-center text-light/80 hover:text-primary transition-colors">
+            <button id="prev-btn" class="w-10 h-10 flex items-center justify-center text-light/80 hover:text-primary transition-colors btn-hover">
                 <i class="fa fa-step-backward"></i>
             </button>
             
-            <button id="play-pause-btn" class="w-16 h-16 rounded-full bg-primary flex items-center justify-center shadow-lg hover:shadow-primary/50 transition-all duration-300 hover:scale-105">
-                <i class="fa fa-play text-xl text-light"></i>
+            <button id="play-pause-btn" class="w-20 h-20 rounded-full bg-primary flex items-center justify-center shadow-lg hover:shadow-primary/50 transition-all duration-300 hover:scale-105">
+                <i class="fa fa-play text-2xl text-light"></i>
             </button>
             
-            <button class="w-10 h-10 flex items-center justify-center text-light/80 hover:text-primary transition-colors">
+            <button id="next-btn" class="w-10 h-10 flex items-center justify-center text-light/80 hover:text-primary transition-colors btn-hover">
                 <i class="fa fa-step-forward"></i>
             </button>
             
-            <button class="w-8 h-8 flex items-center justify-center text-light/60 hover:text-primary transition-colors">
+            <button id="repeat-btn" class="w-10 h-10 flex items-center justify-center text-light/60 hover:text-primary transition-colors btn-hover">
                 <i class="fa fa-repeat"></i>
             </button>
         </div>
         
         <!-- 音量控制 -->
         <div class="flex items-center">
-            <button id="volume-btn" class="w-6 h-6 flex items-center justify-center text-light/70 mr-2">
-                <i class="fa fa-volume-up"></i>
+            <button id="volume-btn" class="w-8 h-8 flex items-center justify-center text-light/70 mr-3 btn-hover">
+                <i class="fa fa-volume-up text-lg"></i>
             </button>
             
-            <div class="flex-1 h-1 bg-light/20 rounded-full overflow-hidden cursor-pointer group relative">
+            <div class="flex-1 h-2 bg-light/20 rounded-full overflow-hidden cursor-pointer group relative">
                 <div id="volume-bar" class="h-full bg-light/50 w-[70%] transition-all duration-300"></div>
-                <div id="volume-handle" class="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-light rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div id="volume-handle" class="absolute top-1/2 -translate-y-1/2 w-5 h-5 bg-light rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-125"></div>
             </div>
         </div>
     </main>
 
     <!-- 页脚 -->
-    <footer class="mt-8 text-center w-full p-4 text-light/50 text-sm z-10">
-        <p>哈基秀生日快乐 &copy; 11·13</p>
+    <footer class="mt-8 text-center w-full p-4 text-light/50 text-sm z-10 animate-pulse-slow">
+        <p>哈基秀生日快乐   11·13</p>
     </footer>
 
     <!-- 音频元素 -->
@@ -177,18 +197,24 @@
         const albumCover = document.getElementById('album-cover');
         const songTitle = document.getElementById('song-title');
         const artist = document.getElementById('artist');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const shuffleBtn = document.getElementById('shuffle-btn');
+        const repeatBtn = document.getElementById('repeat-btn');
         
-        // 模拟播放列表
+        // 播放列表 - 只保留一首歌
         const playlist = [
             {
                 title: "December Encounter",
                 artist: "小沂",
                 cover: "https://raw.githubusercontent.com/Lydand593/Lydand593.github.io/main/3796fadba1922e742123c6e492c64c25.jpg",
                 src: "https://raw.githubusercontent.com/Lydand593/Lydand593.github.io/main/December Encounter.mp3"
-            },
+            }
         ];
         
         let currentTrackIndex = 0;
+        let isShuffle = false;
+        let isRepeat = false;
         
         // 初始化播放器
         function initPlayer() {
@@ -212,27 +238,82 @@
             artist.textContent = track.artist;
             albumCover.querySelector('img').src = track.cover;
             
+            // 添加歌曲切换动画
+            songTitle.classList.add('scale-95', 'opacity-0');
+            artist.classList.add('scale-95', 'opacity-0');
+            albumCover.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                songTitle.classList.remove('scale-95', 'opacity-0');
+                artist.classList.remove('scale-95', 'opacity-0');
+                albumCover.classList.remove('scale-95', 'opacity-0');
+            }, 300);
+            
             audio.load();
             
-            // 更新播放状态
+            // 如果正在播放，则继续播放新歌曲
             if (!audio.paused) {
                 audio.play();
             }
         }
         
         // 播放/暂停切换
-        playPauseBtn.addEventListener('click', () => {
+        playPauseBtn.addEventListener('click', togglePlayPause);
+        
+        function togglePlayPause() {
             if (audio.paused) {
                 audio.play();
-                playPauseBtn.innerHTML = '<i class="fa fa-pause text-xl text-light"></i>';
-                vinyl.classList.add('animate-spin-slow');
-                albumCover.classList.add('animate-spin-slow');
+                playPauseBtn.innerHTML = '<i class="fa fa-pause text-2xl text-light"></i>';
+                // 平滑开始旋转动画
+                vinyl.style.animationPlayState = 'running';
+                albumCover.style.animationPlayState = 'running';
             } else {
                 audio.pause();
-                playPauseBtn.innerHTML = '<i class="fa fa-play text-xl text-light"></i>';
-                vinyl.classList.remove('animate-spin-slow');
-                albumCover.classList.remove('animate-spin-slow');
+                playPauseBtn.innerHTML = '<i class="fa fa-play text-2xl text-light"></i>';
+                // 暂停旋转动画
+                vinyl.style.animationPlayState = 'paused';
+                albumCover.style.animationPlayState = 'paused';
             }
+        }
+        
+        // 上一首
+        prevBtn.addEventListener('click', () => {
+            // 因为只有一首歌，上一首和下一首逻辑相同
+            playNextTrack();
+        });
+        
+        // 下一首
+        nextBtn.addEventListener('click', () => {
+            playNextTrack();
+        });
+        
+        function playNextTrack() {
+            if (isShuffle) {
+                // 随机播放时，虽然只有一首歌，但逻辑保持完整
+                let newIndex;
+                do {
+                    newIndex = Math.floor(Math.random() * playlist.length);
+                } while (newIndex === currentTrackIndex && playlist.length > 1);
+                currentTrackIndex = newIndex;
+            } else {
+                currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
+            }
+            loadTrack(currentTrackIndex);
+        }
+        
+        // 随机播放切换
+        shuffleBtn.addEventListener('click', () => {
+            isShuffle = !isShuffle;
+            shuffleBtn.style.color = isShuffle ? '#FF6B8B' : 'inherit';
+            shuffleBtn.classList.toggle('scale-110', isShuffle);
+        });
+        
+        // 循环播放切换
+        repeatBtn.addEventListener('click', () => {
+            isRepeat = !isRepeat;
+            audio.loop = isRepeat;
+            repeatBtn.style.color = isRepeat ? '#FF6B8B' : 'inherit';
+            repeatBtn.classList.toggle('scale-110', isRepeat);
         });
         
         // 进度条更新
@@ -268,6 +349,7 @@
         progressHandle.addEventListener('mousedown', (e) => {
             isDraggingProgress = true;
             e.preventDefault();
+            progressHandle.classList.add('scale-150');
         });
         
         document.addEventListener('mousemove', (e) => {
@@ -277,12 +359,15 @@
                 pos = Math.max(0, Math.min(1, pos));
                 progressBar.style.width = `${pos * 100}%`;
                 progressHandle.style.left = `${pos * 100}%`;
+                // 显示预览时间
+                currentTimeSpan.textContent = formatTime(pos * audio.duration);
             }
         });
         
         document.addEventListener('mouseup', () => {
             if (isDraggingProgress) {
                 isDraggingProgress = false;
+                progressHandle.classList.remove('scale-150');
                 const pos = parseFloat(progressBar.style.width) / 100;
                 audio.currentTime = pos * audio.duration;
             }
@@ -294,7 +379,8 @@
         volumeBtn.addEventListener('click', () => {
             audio.muted = !audio.muted;
             isMuted = audio.muted;
-            volumeBtn.innerHTML = isMuted ? '<i class="fa fa-volume-off"></i>' : '<i class="fa fa-volume-up"></i>';
+            volumeBtn.innerHTML = isMuted ? '<i class="fa fa-volume-off text-lg"></i>' : 
+                                 (audio.volume > 0.7 ? '<i class="fa fa-volume-up text-lg"></i>' : '<i class="fa fa-volume-down text-lg"></i>');
             updateVolumeUI();
         });
         
@@ -312,6 +398,7 @@
         volumeHandle.addEventListener('mousedown', (e) => {
             isDraggingVolume = true;
             e.preventDefault();
+            volumeHandle.classList.add('scale-150');
         });
         
         document.addEventListener('mousemove', (e) => {
@@ -327,7 +414,9 @@
         document.addEventListener('mouseup', () => {
             if (isDraggingVolume) {
                 isDraggingVolume = false;
+                volumeHandle.classList.remove('scale-150');
                 audio.volume = parseFloat(volumeBar.style.width) / 100;
+                updateVolumeUI();
             }
         });
         
@@ -342,11 +431,11 @@
                 
                 // 更新音量图标
                 if (audio.volume > 0.7) {
-                    volumeBtn.innerHTML = '<i class="fa fa-volume-up"></i>';
+                    volumeBtn.innerHTML = '<i class="fa fa-volume-up text-lg"></i>';
                 } else if (audio.volume > 0) {
-                    volumeBtn.innerHTML = '<i class="fa fa-volume-down"></i>';
+                    volumeBtn.innerHTML = '<i class="fa fa-volume-down text-lg"></i>';
                 } else {
-                    volumeBtn.innerHTML = '<i class="fa fa-volume-off"></i>';
+                    volumeBtn.innerHTML = '<i class="fa fa-volume-off text-lg"></i>';
                 }
             }
         }
@@ -356,41 +445,50 @@
             totalTimeSpan.textContent = formatTime(audio.duration);
         });
         
-        // 音频播放结束
-        audio.addEventListener('ended', () => {
-            // 播放下一首
-            currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
-            loadTrack(currentTrackIndex);
-        });
-        
-        // 创建粒子背景效果
+        // 创建粒子背景效果 (最终版：漂浮且随机旋转)
         function createParticles() {
-            const colors = ['#FF6B8B', '#FFD166', '#06D6A0', '#118AB2', '#FFFFFF'];
+            const colors = ['#FF6B8B', '#FF8FA3', '#FFB3C1', '#FFD1D1', '#FEC5E5'];
             const container = document.getElementById('particles-container');
-            
-            // 创建150个粒子元素
-            for (let i = 0; i < 150; i++) {
+            container.innerHTML = '';
+
+            // 创建100个爱心粒子
+            for (let i = 0; i < 100; i++) {
                 const particle = document.createElement('div');
                 
-                // 随机属性
-                const size = Math.random() * 5 + 2; // 2-7px
-                const color = colors[Math.floor(Math.random() * colors.length)];
-                const left = Math.random() * 100; // 0-100%
-                const animationDuration = Math.random() * 20 + 10; // 10-30s
-                const animationDelay = Math.random() * 30; // 0-30s
-                const opacity = Math.random() * 0.5 + 0.2; // 0.2-0.7
+                // 爱心尺寸 (12-25px)
+                const size = Math.random() * 13 + 12; 
                 
-                // 设置样式
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                const left = Math.random() * 100;
+                const animationDuration = Math.random() * 20 + 10;
+                const animationDelay = Math.random() * 30;
+                const opacity = Math.random() * 0.5 + 0.3;
+
+                // 核心修改1：随机旋转方向和角度
+                const rotationAngle = Math.random() > 0.5 ? '720deg' : '-720deg';
+
+                // 爱心形状
+                particle.style.clipPath = `path('M${size/2},${size*0.3} C${0},${0} ${0},${size*0.6} ${size/2},${size*0.8} C${size},${size*0.6} ${size},${0} ${size/2},${size*0.3} Z')`;
+
+                // 应用样式
                 particle.style.position = 'absolute';
                 particle.style.width = `${size}px`;
                 particle.style.height = `${size}px`;
                 particle.style.backgroundColor = color;
                 particle.style.left = `${left}%`;
-                particle.style.top = '-20px';
+                particle.style.top = '-50px'; // 从容器外上方开始
                 particle.style.opacity = opacity;
-                particle.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
-                particle.style.transform = 'rotate(0deg)';
-                particle.style.animation = `float-up ${animationDuration}s linear ${animationDelay}s infinite`;
+                particle.style.borderRadius = '0';
+                particle.style.transformOrigin = 'center'; // 确保旋转以中心为轴
+                
+                // 核心修改2：将旋转角度作为CSS变量存储
+                particle.style.setProperty('--rotation', rotationAngle);
+                
+                // 核心修改3：同时应用漂浮和旋转动画
+                particle.style.animation = `
+                    float-up ${animationDuration}s linear ${animationDelay}s infinite,
+                    rotate ${animationDuration}s linear ${animationDelay}s infinite
+                `;
                 
                 container.appendChild(particle);
             }
@@ -400,6 +498,9 @@
         window.addEventListener('load', () => {
             initPlayer();
             createParticles();
+            
+            // 窗口大小改变时重新创建粒子
+            window.addEventListener('resize', createParticles);
         });
     </script>
 </body>
